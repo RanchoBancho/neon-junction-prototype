@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#06121a" />
+    <title>Neon Junction Prototype</title>
+    <link rel="stylesheet" href="./style.css" />
+  </head>
+  <body>
+    <main id="game-shell" aria-label="Neon Junction Prototype">
+      <canvas id="game" width="1280" height="720"></canvas>
+      <div id="touch-controls" aria-hidden="true">
+        <button data-control="left">‹</button>
+        <button data-control="up">▲</button>
+        <button data-control="down">▼</button>
+        <button data-control="right">›</button>
+      </div>
+    </main>
+    <script type="module" src="./src/game.js"></script>
+  </body>
+</html>
