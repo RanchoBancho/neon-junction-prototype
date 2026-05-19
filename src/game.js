@@ -26,7 +26,7 @@ const joypad = {
   pointerId: null,
   x: 0,
   y: 0,
-  radius: 55,
+  magnitude: 0,
 };
 const camera = { x: 0, y: 0 };
 let lastTime = performance.now();
@@ -140,6 +140,10 @@ function distance(a, b, c, d) {
   return Math.hypot(a - c, b - d);
 }
 
+function angleDelta(from, to) {
+  return Math.atan2(Math.sin(to - from), Math.cos(to - from));
+}
+
 function control(name) {
   return keys.has(name);
 }
@@ -164,13 +168,25 @@ function resolveCircleRect(entity, r) {
 function update(dt) {
   const keyboardThrottle = (control("up") ? 1 : 0) - (control("down") ? 0.7 : 0);
   const keyboardTurn = (control("right") ? 1 : 0) - (control("left") ? 1 : 0);
-  const throttleAxis = joypad.active ? -joypad.y : keyboardThrottle;
-  const turnInput = joypad.active ? joypad.x : keyboardTurn;
-  const thrust = throttleAxis >= 0 ? throttleAxis * 440 : throttleAxis * 260;
-  const turnRate = 2.55 * clamp(Math.abs(player.speed) / 170, 0.28, 1);
+  const usingJoypad = joypad.active && joypad.magnitude > 0.08;
 
-  player.angle += turnInput * turnRate * dt * Math.sign(player.speed || 1);
-  player.speed += thrust * dt;
+  if (usingJoypad) {
+    const desiredAngle = Math.atan2(joypad.y, joypad.x);
+    const steeringError = angleDelta(player.angle, desiredAngle);
+    const turnInput = clamp(steeringError / 0.8, -1, 1);
+    const turnRate = 3.65 * clamp(0.58 + Math.abs(player.speed) / 280, 0.58, 1.25);
+    const targetSpeed = 110 + joypad.magnitude * 250;
+
+    player.angle += turnInput * turnRate * dt;
+    player.speed += (targetSpeed - player.speed) * Math.min(1, dt * 4.8);
+  } else {
+    const thrust = keyboardThrottle >= 0 ? keyboardThrottle * 440 : keyboardThrottle * 260;
+    const turnRate = 2.55 * clamp(Math.abs(player.speed) / 170, 0.28, 1);
+
+    player.angle += keyboardTurn * turnRate * dt * Math.sign(player.speed || 1);
+    player.speed += thrust * dt;
+  }
+
   player.speed *= Math.pow(0.965, dt * 60);
   player.speed = clamp(player.speed, -210, 360);
 
@@ -675,6 +691,7 @@ if (joypadElement && joypadKnob) {
 
     joypad.x = clamp(knobX / limit, -1, 1);
     joypad.y = clamp(knobY / limit, -1, 1);
+    joypad.magnitude = clamp(distance / limit, 0, 1);
     joypadKnob.style.transform = `translate(calc(-50% + ${knobX}px), calc(-50% + ${knobY}px))`;
   };
 
@@ -683,6 +700,7 @@ if (joypadElement && joypadKnob) {
     joypad.pointerId = null;
     joypad.x = 0;
     joypad.y = 0;
+    joypad.magnitude = 0;
     joypadKnob.style.transform = "translate(-50%, -50%)";
   };
 
