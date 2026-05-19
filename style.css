@@ -42,51 +42,79 @@ body {
   touch-action: none;
 }
 
-#touch-controls {
+#touch-joypad {
   position: fixed;
-  right: 18px;
-  bottom: 18px;
+  left: 20px;
+  bottom: 20px;
+  z-index: 5;
   display: none;
-  grid-template-columns: 56px 56px 56px;
-  grid-template-rows: 56px 56px;
-  gap: 8px;
-  pointer-events: none;
+  width: 150px;
+  height: 150px;
+  touch-action: none;
+  user-select: none;
 }
 
-#touch-controls button {
-  width: 56px;
-  height: 56px;
-  border: 1px solid rgba(173, 229, 255, 0.45);
-  border-radius: 8px;
-  background: rgba(7, 19, 27, 0.72);
-  color: #edf7ff;
-  font: 800 24px/1 system-ui;
-  pointer-events: auto;
+#joypad-base {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  border: 2px solid rgba(173, 229, 255, 0.5);
+  border-radius: 50%;
+  background:
+    radial-gradient(circle, rgba(72, 215, 232, 0.16), rgba(7, 19, 27, 0.66) 58%),
+    rgba(7, 19, 27, 0.72);
   box-shadow: 0 8px 22px rgba(0, 0, 0, 0.24);
 }
 
-#touch-controls [data-control="left"] {
-  grid-column: 1;
-  grid-row: 2;
+#joypad-base::before,
+#joypad-base::after {
+  position: absolute;
+  content: "";
+  left: 50%;
+  top: 50%;
+  background: rgba(237, 247, 255, 0.18);
+  transform: translate(-50%, -50%);
 }
 
-#touch-controls [data-control="up"] {
-  grid-column: 2;
-  grid-row: 1;
+#joypad-base::before {
+  width: 92px;
+  height: 2px;
 }
 
-#touch-controls [data-control="down"] {
-  grid-column: 2;
-  grid-row: 2;
+#joypad-base::after {
+  width: 2px;
+  height: 92px;
 }
 
-#touch-controls [data-control="right"] {
-  grid-column: 3;
-  grid-row: 2;
+#joypad-knob {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 58px;
+  height: 58px;
+  border: 2px solid rgba(237, 247, 255, 0.75);
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at 35% 30%, rgba(237, 247, 255, 0.55), transparent 30%),
+    rgba(72, 215, 232, 0.78);
+  box-shadow:
+    0 10px 22px rgba(0, 0, 0, 0.32),
+    0 0 22px rgba(72, 215, 232, 0.28);
+  transform: translate(-50%, -50%);
+  will-change: transform;
 }
 
 @media (pointer: coarse) {
-  #touch-controls {
-    display: grid;
+  #touch-joypad {
+    display: block;
+  }
+}
+
+@media (max-width: 720px) {
+  #touch-joypad {
+    left: 14px;
+    bottom: 14px;
+    width: 132px;
+    height: 132px;
   }
 }

@@ -21,7 +21,13 @@ const palette = {
 };
 
 const keys = new Set();
-const touchKeys = new Set();
+const joypad = {
+  active: false,
+  pointerId: null,
+  x: 0,
+  y: 0,
+  radius: 55,
+};
 const camera = { x: 0, y: 0 };
 let lastTime = performance.now();
 let shake = 0;
@@ -135,7 +141,7 @@ function distance(a, b, c, d) {
 }
 
 function control(name) {
-  return keys.has(name) || touchKeys.has(name);
+  return keys.has(name);
 }
 
 function resolveCircleRect(entity, r) {
@@ -156,8 +162,11 @@ function resolveCircleRect(entity, r) {
 }
 
 function update(dt) {
-  const thrust = control("up") ? 440 : control("down") ? -260 : 0;
-  const turnInput = (control("right") ? 1 : 0) - (control("left") ? 1 : 0);
+  const keyboardThrottle = (control("up") ? 1 : 0) - (control("down") ? 0.7 : 0);
+  const keyboardTurn = (control("right") ? 1 : 0) - (control("left") ? 1 : 0);
+  const throttleAxis = joypad.active ? -joypad.y : keyboardThrottle;
+  const turnInput = joypad.active ? joypad.x : keyboardTurn;
+  const thrust = throttleAxis >= 0 ? throttleAxis * 440 : throttleAxis * 260;
   const turnRate = 2.55 * clamp(Math.abs(player.speed) / 170, 0.28, 1);
 
   player.angle += turnInput * turnRate * dt * Math.sign(player.speed || 1);
@@ -582,7 +591,7 @@ function drawMiniMap() {
 function drawControlsHint() {
   ctx.fillStyle = "rgba(237, 247, 255, 0.72)";
   ctx.font = "800 13px Inter, system-ui";
-  ctx.fillText("Drive: WASD / arrows", 286, VIEW.h - 34);
+  ctx.fillText("Drive: WASD / arrows or touch joypad", 286, VIEW.h - 34);
 }
 
 function drawEndOverlay(title, subtitle) {
@@ -648,19 +657,57 @@ window.addEventListener("keyup", (event) => {
   if (mapped) keys.delete(mapped);
 });
 
-document.querySelectorAll("#touch-controls button").forEach((button) => {
-  const key = button.dataset.control;
-  button.addEventListener("pointerdown", (event) => {
+const joypadElement = document.querySelector("#touch-joypad");
+const joypadKnob = document.querySelector("#joypad-knob");
+
+if (joypadElement && joypadKnob) {
+  const updateJoypad = (event) => {
+    const bounds = joypadElement.getBoundingClientRect();
+    const centerX = bounds.left + bounds.width / 2;
+    const centerY = bounds.top + bounds.height / 2;
+    const rawX = event.clientX - centerX;
+    const rawY = event.clientY - centerY;
+    const limit = Math.min(bounds.width, bounds.height) * 0.36;
+    const distance = Math.hypot(rawX, rawY);
+    const scale = distance > limit ? limit / distance : 1;
+    const knobX = rawX * scale;
+    const knobY = rawY * scale;
+
+    joypad.x = clamp(knobX / limit, -1, 1);
+    joypad.y = clamp(knobY / limit, -1, 1);
+    joypadKnob.style.transform = `translate(calc(-50% + ${knobX}px), calc(-50% + ${knobY}px))`;
+  };
+
+  const resetJoypad = () => {
+    joypad.active = false;
+    joypad.pointerId = null;
+    joypad.x = 0;
+    joypad.y = 0;
+    joypadKnob.style.transform = "translate(-50%, -50%)";
+  };
+
+  joypadElement.addEventListener("pointerdown", (event) => {
     event.preventDefault();
-    touchKeys.add(key);
-    button.setPointerCapture(event.pointerId);
+    joypad.active = true;
+    joypad.pointerId = event.pointerId;
+    joypadElement.setPointerCapture(event.pointerId);
+    updateJoypad(event);
   });
-  button.addEventListener("pointerup", (event) => {
+
+  joypadElement.addEventListener("pointermove", (event) => {
+    if (joypad.pointerId !== event.pointerId) return;
     event.preventDefault();
-    touchKeys.delete(key);
+    updateJoypad(event);
   });
-  button.addEventListener("pointercancel", () => touchKeys.delete(key));
-});
+
+  joypadElement.addEventListener("pointerup", (event) => {
+    if (joypad.pointerId === event.pointerId) resetJoypad();
+  });
+
+  joypadElement.addEventListener("pointercancel", (event) => {
+    if (joypad.pointerId === event.pointerId) resetJoypad();
+  });
+}
 
 function mapKey(key) {
   const value = key.toLowerCase();

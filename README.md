@@ -9,7 +9,7 @@ Open `index.html` or serve the folder with any static server.
 Controls:
 
 - `WASD` or arrow keys to drive
-- Touch buttons appear on coarse pointer devices
+- A one-finger analog joypad appears on touch devices
 
 ## Prototype Loop
 

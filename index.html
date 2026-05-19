@@ -10,11 +10,10 @@
   <body>
     <main id="game-shell" aria-label="Neon Junction Prototype">
       <canvas id="game" width="1280" height="720"></canvas>
-      <div id="touch-controls" aria-hidden="true">
-        <button data-control="left">‹</button>
-        <button data-control="up">▲</button>
-        <button data-control="down">▼</button>
-        <button data-control="right">›</button>
+      <div id="touch-joypad" aria-label="Touch driving joypad">
+        <div id="joypad-base">
+          <div id="joypad-knob"></div>
+        </div>
       </div>
     </main>
     <script type="module" src="./src/game.js"></script>
