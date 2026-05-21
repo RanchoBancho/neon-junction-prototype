@@ -4,12 +4,18 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="theme-color" content="#06121a" />
-    <title>Neon Junction Prototype</title>
+    <title>Top Down Racing Prototype</title>
     <link rel="stylesheet" href="./style.css" />
   </head>
   <body>
-    <main id="game-shell" aria-label="Neon Junction Prototype">
+    <main id="game-shell" aria-label="Top Down Racing Prototype">
       <canvas id="game" width="1280" height="720"></canvas>
+      <div id="track-select" aria-label="Track select">
+        <button class="active" data-track="0">Dockside</button>
+        <button data-track="1">Switchback</button>
+        <button data-track="2">Canyon</button>
+        <button id="restart-race">Restart</button>
+      </div>
       <div id="touch-joypad" aria-label="Touch driving joypad">
         <div id="joypad-base">
           <div id="joypad-knob"></div>
